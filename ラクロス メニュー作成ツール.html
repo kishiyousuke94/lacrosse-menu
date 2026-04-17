@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラクロス メニュー作成ツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#1a1a1a;}
+.app{max-width:430px;margin:0 auto;padding:0 0 2rem;background:#f5f5f5;min-height:100vh;}
+.tab-header{display:flex;border-bottom:1px solid #e0e0e0;background:#fff;position:sticky;top:0;z-index:10;}
+.tab-btn{flex:1;padding:14px 0;font-size:14px;font-weight:500;border:none;background:transparent;color:#888;cursor:pointer;border-bottom:2px solid transparent;}
+.tab-btn.active{color:#1a1a1a;border-bottom:2px solid #378ADD;}
+.tab-content{padding:0 1rem;padding-top:1rem;}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.sec-title{font-size:12px;font-weight:600;color:#888;letter-spacing:.05em;margin-bottom:12px;text-transform:uppercase;}
+.time-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.time-lbl{font-size:14px;color:#666;width:52px;flex-shrink:0;}
+.time-input{flex:1;height:38px;border:1px solid #ddd;border-radius:8px;padding:0 10px;font-size:14px;background:#fff;color:#1a1a1a;}
+.divider{border-top:1px solid #f0f0f0;margin:10px 0;}
+.practice-row{display:flex;align-items:baseline;gap:6px;}
+.practice-num{font-size:24px;font-weight:600;color:#1a1a1a;}
+.practice-unit{font-size:13px;color:#888;}
+.weight-table{width:100%;border-collapse:collapse;}
+.weight-table th{font-size:12px;color:#888;font-weight:500;padding:0 0 8px;text-align:left;}
+.weight-table td{padding:5px 0;vertical-align:middle;}
+.cat-name{font-size:14px;color:#1a1a1a;}
+.weight-wrap{display:flex;align-items:center;gap:5px;}
+.weight-input{width:52px;height:32px;border:1px solid #ddd;border-radius:8px;padding:0 6px;font-size:14px;text-align:right;background:#fff;color:#1a1a1a;}
+.pct{font-size:13px;color:#888;}
+.lv-select{width:100%;height:32px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;padding:0 4px;}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid #f0f0f0;margin-top:4px;}
+.total-lbl{font-size:13px;color:#888;}
+.total-val{font-size:15px;font-weight:500;}
+.err-badge{background:#FCEBEB;color:#A32D2D;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:500;}
+.ok-badge{background:#EAF3DE;color:#3B6D11;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:500;}
+.gen-btn{width:100%;padding:13px;font-size:15px;font-weight:500;border-radius:12px;border:1px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;margin-bottom:1rem;}
+.gen-btn:hover{background:#f5f5f5;}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed;}
+.proposal-row{display:flex;align-items:center;gap:5px;padding:7px 0;border-bottom:1px solid #f0f0f0;}
+.proposal-row:last-child{border-bottom:none;}
+.p-num{font-size:12px;color:#aaa;width:16px;flex-shrink:0;text-align:right;}
+.p-cat-sel{height:30px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;padding:0 4px;width:86px;flex-shrink:0;}
+.p-drill{flex:1;min-width:0;}
+.p-drill select{width:100%;height:30px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;}
+.p-time{display:flex;align-items:center;gap:3px;flex-shrink:0;}
+.p-time select{width:46px;height:30px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;}
+.p-time-unit{font-size:11px;color:#888;}
+.del-btn{width:24px;height:24px;border-radius:50%;border:1px solid #ddd;background:#f5f5f5;color:#888;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
+.del-btn:hover{background:#FCEBEB;color:#A32D2D;}
+.add-row-btn{width:100%;padding:8px;font-size:13px;border-radius:8px;border:1px dashed #ddd;background:transparent;color:#888;cursor:pointer;margin-top:8px;}
+.add-row-btn:hover{background:#f5f5f5;}
+.sum-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.sum-lbl{font-size:14px;color:#888;}
+.sum-val{font-size:18px;font-weight:500;color:#1a1a1a;}
+.progress-wrap{height:6px;border-radius:3px;background:#f0f0f0;margin-top:8px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:3px;transition:width .3s;}
+.confirm-btn{width:100%;padding:14px;font-size:15px;font-weight:500;border-radius:12px;border:1px solid #378ADD;background:#E6F1FB;color:#185FA5;cursor:pointer;margin-top:1rem;}
+.confirm-btn:hover{background:#B5D4F4;}
+.confirm-btn:disabled{opacity:.5;cursor:not-allowed;}
+.sending-msg{font-size:12px;color:#185FA5;text-align:center;margin-top:6px;}
+.toast{border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:14px;}
+.toast-ok{background:#EAF3DE;border:1px solid #97C459;color:#27500A;}
+.toast-err{background:#FCEBEB;border:1px solid #F09595;color:#A32D2D;}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:1rem;}
+.metric{background:#f5f5f5;border-radius:8px;padding:10px 12px;}
+.metric-label{font-size:11px;color:#888;margin-bottom:4px;}
+.metric-val{font-size:20px;font-weight:600;color:#1a1a1a;}
+.metric-unit{font-size:11px;color:#888;font-weight:400;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-label{font-size:13px;color:#1a1a1a;width:80px;flex-shrink:0;}
+.bar-wrap{flex:1;height:20px;background:#f0f0f0;border-radius:3px;overflow:visible;position:relative;}
+.bar-fill{height:100%;border-radius:3px;}
+.bar-pct{font-size:12px;color:#888;width:32px;text-align:right;flex-shrink:0;}
+.bar-tgt{font-size:11px;color:#aaa;width:42px;text-align:right;flex-shrink:0;}
+.legend{display:flex;gap:14px;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#888;}
+.legend-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.alert-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;margin-bottom:8px;}
+.alert-row:last-child{margin-bottom:0;}
+.alert-warn{background:#FAEEDA;border:1px solid #EF9F27;}
+.alert-ok{background:#EAF3DE;border:1px solid #97C459;}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.dot-warn{background:#BA7517;}
+.dot-ok{background:#3B6D11;}
+.alert-warn .alert-text{font-size:13px;color:#633806;}
+.alert-ok .alert-text{font-size:13px;color:#27500A;}
+.drill-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;}
+.drill-row:last-child{border-bottom:none;}
+.drill-name{font-size:13px;color:#1a1a1a;}
+.drill-sub{font-size:11px;color:#aaa;margin-top:1px;}
+.drill-count{font-size:12px;color:#888;flex-shrink:0;}
+.no-data{font-size:13px;color:#aaa;text-align:center;padding:20px 0;}
+.hist-item{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.hist-item:last-child{border-bottom:none;}
+.h-date{font-size:12px;color:#aaa;flex-shrink:0;margin-right:8px;margin-top:1px;}
+.h-content{font-size:13px;color:#1a1a1a;flex:1;}
+.h-min{font-size:12px;color:#888;flex-shrink:0;}
+.sync-badge{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;font-weight:500;margin-top:3px;}
+.sync-ok{background:#EAF3DE;color:#3B6D11;}
+.sync-pending{background:#FAEEDA;color:#633806;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tab-header">
+    <button class="tab-btn active" id="tab-plan" onclick="switchTab('plan')">メニュー作成</button>
+    <button class="tab-btn" id="tab-stats" onclick="switchTab('stats')">集計</button>
+  </div>
+  <div id="view-plan" class="tab-content">
+    <div id="toastArea"></div>
+    <div class="card">
+      <div class="sec-title">練習時間</div>
+      <div class="time-row"><span class="time-lbl">開始</span><input type="time" class="time-input" id="startTime" value="15:00"></div>
+      <div class="time-row" style="margin-bottom:0;"><span class="time-lbl">終了</span><input type="time" class="time-input" id="endTime" value="18:00"></div>
+      <div class="divider"></div>
+      <div class="practice-row">
+        <span class="time-lbl" style="font-size:13px;">実練習</span>
+        <span class="practice-num" id="practiceMin">150</span>
+        <span class="practice-unit">分</span>
+        <span class="practice-unit" style="margin-left:4px;font-size:11px;">(アップ・片付け30分除く)</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">ウェイト &amp; レベル設定</div>
+      <table class="weight-table">
+        <thead><tr><th style="width:34%;">カテゴリ</th><th style="width:33%;">ウェイト</th><th style="width:33%;">レベル</th></tr></thead>
+        <tbody id="weightBody"></tbody>
+      </table>
+      <div class="total-row">
+        <span class="total-lbl">合計</span>
+        <span id="weightTotal" class="total-val">100%</span>
+        <span id="weightErr"></span>
+      </div>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">メニューを提案する</button>
+    <div id="proposalSection" style="display:none;">
+      <div class="card">
+        <div class="sec-title">提案メニュー <span style="float:right;font-size:12px;color:#378ADD;cursor:pointer;" onclick="generate()">再提案</span></div>
+        <div id="proposalList"></div>
+        <button class="add-row-btn" onclick="addRow()">＋ 行を追加</button>
+      </div>
+      <div class="card">
+        <div class="sum-row"><span class="sum-lbl">合計時間</span><span class="sum-val"><span id="totalMin">0</span>分</span></div>
+        <div class="sum-row"><span class="sum-lbl">実練習との差</span><span id="diffBadge" class="ok-badge">+0分</span></div>
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%;background:#639922;"></div></div>
+        <button class="confirm-btn" id="confirmBtn" onclick="confirmSession()">確定してスプシに送信</button>
+        <div id="sendingMsg" style="display:none;" class="sending-msg">送信中...</div>
+      </div>
+    </div>
+  </div>
+  <div id="view-stats" class="tab-content" style="display:none;">
+    <div id="metricsGrid" class="metrics"></div>
+    <div class="card">
+      <div class="sec-title">カテゴリ別 実績 vs 設定ウェイト</div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-sq" style="background:#378ADD;"></span>実績</span>
+        <span class="legend-item"><span class="legend-sq" style="background:#aaa;"></span>目標ライン</span>
+      </div>
+      <div id="statsBarChart"></div>
+    </div>
+    <div class="card"><div class="sec-title">アラート</div><div id="alertList"></div></div>
+    <div class="card"><div class="sec-title">ドリル出現頻度（上位10）</div><div id="drillFreqList"></div></div>
+    <div class="card">
+      <div class="sec-title">蓄積履歴 <span id="histCount" style="color:#aaa;font-size:11px;"></span></div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+<script>
+const GAS_URL="https://script.google.com/macros/s/AKfycbzMxlPyXDbNo_cUxIzSqHuYKB97fNwQlJtIfkNQKxOMU_Ewy5qBCEdoKDCGerZwxVuy/exec";
+const BUFFER=30;
+const STORAGE_KEY="lacrosse_v9";
+const CATEGORIES=[
+  {id:"throw",name:"スロー"},{id:"catch",name:"キャッチ"},
+  {id:"gb",name:"グラウンドボール"},{id:"handle",name:"ハンドリング"},{id:"shoot",name:"シュート"},
+];
+const CAT_COLORS={throw:"#378ADD",catch:"#1D9E75",gb:"#D85A30",handle:"#EF9F27",shoot:"#534AB7"};
+const LEVELS_SPEED=[{v:1,label:"Lv1 足を止めて"},{v:2,label:"Lv2 歩きながら"},{v:3,label:"Lv3 ジョグ"},{v:4,label:"Lv4 走りながら"},{v:5,label:"Lv5 全力"}];
+const DRILLS={
+  throw:{1:["ネット投げ（逆手）","ネット投げ（利き手）","壁当て近距離"],2:["対面パスキャ（正対）","対面パスキャ（半身：クローズ）","対面パスキャ（半身：オープン）","対面パスキャ（長座）"],3:["移動パス（横流れ）","対面パス（ジョグ）","クロス前パス"],4:["移動パス（スプリント）","クロス越しパス","角度変えパス"],5:["全力移動パス","試合形式フィード","ロングパス"]},
+  catch:{1:["ゆっくり投げてもらいキャッチ","ネット前キャッチ","手でのキャッチ練習"],2:["対面キャッチ（歩き）","バウンドキャッチ","ローキャッチ"],3:["移動しながらキャッチ","高さ変えてキャッチ","後退キャッチ"],4:["走りながら背後キャッチ","クロス外キャッチ","ターンキャッチ"],5:["全力スプリントキャッチ","試合形式受け","ノールックキャッチ"]},
+  gb:{1:["静止ボール拾い","ゆっくり転がしGB"],2:["歩きながらGB","相手と競わずGB"],3:["ジョグGB争い","体入れGB","方向変えGB"],4:["全力GB争い","壁際GB","2人競合GB"],5:["試合形式GB","プレッシャーGB","ランニングGB"]},
+  handle:{1:["クレードル（静止）","左右持ち替え","壁当てクレードル"],2:["歩きクレードル","8の字クレードル","フィギュア8"],3:["ジョグクレードル","障害物よけクレードル","方向転換クレードル"],4:["スプリントクレードル","DF圧力下クレードル","ターンクレードル"],5:["1on1仕掛けクレードル","試合形式ボールキープ","フェイククレードル"]},
+  shoot:{1:["静止シュート（ミドル）","フォームチェックシュート","コース確認シュート"],2:["ステップシュート","カットシュート（歩き）","至近クイックシュート（歩き）"],3:["ジョグシュート（ミドル）","ジョグランシュート","角度変えシュート"],4:["走り込みシュート","GKありシュート","全力ランシュート"],5:["試合形式シュート","フェイクからシュート","接触後クイックシュート"]},
+};
+const TIME_OPTIONS=[5,10,15,20,25,30];
+let weights={throw:30,catch:20,gb:10,handle:10,shoot:30};
+let levels={throw:2,catch:1,gb:3,handle:2,shoot:2};
+let proposals=[];
+let history=[];
+
+function loadHistory(){ try{ const r=localStorage.getItem(STORAGE_KEY); if(r) history=JSON.parse(r); }catch(e){ history=[]; } }
+function saveHistory(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(history)); }catch(e){} }
+function genSessionId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function showToast(msg,type){
+  const area=document.getElementById("toastArea");
+  const t=document.createElement("div");
+  t.className="toast "+(type==="ok"?"toast-ok":"toast-err");
+  t.textContent=msg;
+  area.appendChild(t);
+  setTimeout(()=>t.remove(),5000);
+}
+
+function switchTab(tab){
+  document.getElementById("view-plan").style.display=tab==="plan"?"block":"none";
+  document.getElementById("view-stats").style.display=tab==="stats"?"block":"none";
+  document.getElementById("tab-plan").className="tab-btn"+(tab==="plan"?" active":"");
+  document.getElementById("tab-stats").className="tab-btn"+(tab==="stats"?" active":"");
+  if(tab==="stats") renderStats();
+}
+
+function getPracticeMin(){
+  const [sh,sm]=document.getElementById("startTime").value.split(":").map(Number);
+  const [eh,em]=document.getElementById("endTime").value.split(":").map(Number);
+  return Math.max(0,(eh*60+em)-(sh*60+sm)-BUFFER);
+}
+function updatePracticeMin(){ document.getElementById("practiceMin").textContent=getPracticeMin(); updateSummary(); }
+
+function renderWeightTable(){
+  const tbody=document.getElementById("weightBody"); tbody.innerHTML="";
+  CATEGORIES.forEach(cat=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td><span class="cat-name">${cat.name}</span></td>
+      <td><div class="weight-wrap"><input type="number" class="weight-input" min="0" max="100" value="${weights[cat.id]}" data-id="${cat.id}" onchange="onWeightChange(this)"><span class="pct">%</span></div></td>
+      <td><select class="lv-select" data-id="${cat.id}" onchange="onLevelChange(this)">${LEVELS_SPEED.map(l=>`<option value="${l.v}" ${levels[cat.id]==l.v?"selected":""}>${l.label}</option>`).join("")}</select></td>`;
+    tbody.appendChild(tr);
+  });
+  updateWeightTotal();
+}
+function onWeightChange(el){ weights[el.dataset.id]=parseInt(el.value)||0; updateWeightTotal(); }
+function onLevelChange(el){ levels[el.dataset.id]=parseInt(el.value); }
+function updateWeightTotal(){
+  const total=Object.values(weights).reduce((a,b)=>a+b,0);
+  const el=document.getElementById("weightTotal");
+  el.textContent=total+"%";
+  if(total!==100){ el.style.color="#E24B4A"; document.getElementById("weightErr").innerHTML='<span class="err-badge">100%にしてください</span>'; document.getElementById("genBtn").disabled=true; }
+  else{ el.style.color="#1a1a1a"; document.getElementById("weightErr").innerHTML='<span class="ok-badge">OK</span>'; document.getElementById("genBtn").disabled=false; }
+}
+
+function pickDrill(catId,level){
+  const pool=DRILLS[catId]?.[level]||[];
+  if(!pool.length) return "ドリル未設定";
+  const counts={};
+  pool.forEach(d=>{ counts[d]=0; });
+  history.forEach(s=>s.items.forEach(i=>{ if(i.catId===catId&&i.level===level&&counts[i.drill]!==undefined) counts[i.drill]++; }));
+  const min=Math.min(...Object.values(counts));
+  const cands=pool.filter(d=>counts[d]===min);
+  return cands[Math.floor(Math.random()*cands.length)];
+}
+
+function generate(){
+  const pm=getPracticeMin();
+  const totalSlots=Math.max(3,Math.round(pm/15));
+  const tps=Math.round(pm/totalSlots/5)*5||10;
+  const slots=[];
+  CATEGORIES.forEach(cat=>{ const c=Math.round(totalSlots*weights[cat.id]/100); for(let i=0;i<c;i++) slots.push(cat); });
+  while(slots.length<totalSlots){ const h=CATEGORIES.reduce((a,b)=>weights[a.id]>=weights[b.id]?a:b); slots.push(h); }
+  slots.splice(totalSlots);
+  slots.sort((a,b)=>CATEGORIES.indexOf(a)-CATEGORIES.indexOf(b));
+  proposals=slots.map(cat=>({catId:cat.id,level:levels[cat.id],drill:pickDrill(cat.id,levels[cat.id]),time:tps}));
+  renderProposals();
+  document.getElementById("proposalSection").style.display="block";
+  updateSummary();
+}
+
+function getCatOptions(sel){ return CATEGORIES.map(c=>`<option value="${c.id}" ${c.id===sel?"selected":""}>${c.name}</option>`).join(""); }
+function getDrillOptions(catId,level,sel){ const pool=DRILLS[catId]?.[level]||[]; return pool.length?pool.map(d=>`<option value="${d}" ${d===sel?"selected":""}>${d}</option>`).join(""):`<option value="${sel}">${sel}</option>`; }
+
+function makeRow(p,idx){
+  const row=document.createElement("div"); row.className="proposal-row";
+  const num=document.createElement("span"); num.className="p-num"; num.textContent=idx+1;
+  const catSel=document.createElement("select"); catSel.className="p-cat-sel"; catSel.innerHTML=getCatOptions(p.catId);
+  catSel.onchange=function(){ proposals[idx].catId=this.value; proposals[idx].level=levels[this.value]||1; proposals[idx].drill=pickDrill(this.value,proposals[idx].level); renderProposals(); updateSummary(); };
+  const drillWrap=document.createElement("div"); drillWrap.className="p-drill";
+  const drillSel=document.createElement("select"); drillSel.innerHTML=getDrillOptions(p.catId,p.level,p.drill);
+  drillSel.onchange=function(){ proposals[idx].drill=this.value; };
+  drillWrap.appendChild(drillSel);
+  const timeWrap=document.createElement("div"); timeWrap.className="p-time";
+  const timeSel=document.createElement("select"); timeSel.innerHTML=TIME_OPTIONS.map(t=>`<option value="${t}" ${t===p.time?"selected":""}>${t}</option>`).join("");
+  timeSel.onchange=function(){ proposals[idx].time=parseInt(this.value); updateSummary(); };
+  const unit=document.createElement("span"); unit.className="p-time-unit"; unit.textContent="分";
+  timeWrap.appendChild(timeSel); timeWrap.appendChild(unit);
+  const del=document.createElement("button"); del.className="del-btn"; del.textContent="×";
+  del.onclick=function(){ proposals.splice(idx,1); renderProposals(); updateSummary(); };
+  row.appendChild(num); row.appendChild(catSel); row.appendChild(drillWrap); row.appendChild(timeWrap); row.appendChild(del);
+  return row;
+}
+function renderProposals(){ const list=document.getElementById("proposalList"); list.innerHTML=""; proposals.forEach((p,idx)=>list.appendChild(makeRow(p,idx))); }
+function addRow(){ const cat=CATEGORIES[0]; const lv=levels[cat.id]||1; proposals.push({catId:cat.id,level:lv,drill:pickDrill(cat.id,lv),time:10}); renderProposals(); updateSummary(); }
+
+function updateSummary(){
+  if(!proposals.length) return;
+  const total=proposals.reduce((a,p)=>a+p.time,0);
+  const practice=getPracticeMin();
+  const diff=practice-total;
+  document.getElementById("totalMin").textContent=total;
+  const badge=document.getElementById("diffBadge");
+  const bar=document.getElementById("progressBar");
+  bar.style.width=Math.min(100,Math.round(total/Math.max(1,practice)*100))+"%";
+  if(diff<0){ badge.textContent=Math.abs(diff)+"分オーバー！"; badge.className="err-badge"; bar.style.background="#E24B4A"; }
+  else{ badge.textContent="+"+diff+"分"; badge.className="ok-badge"; bar.style.background="#639922"; }
+}
+
+async function confirmSession(){
+  if(!proposals.length) return;
+  const now=new Date();
+  const ds=now.getFullYear()+"/"+(now.getMonth()+1).toString().padStart(2,"0")+"/"+now.getDate().toString().padStart(2,"0");
+  const sessionId=genSessionId();
+  const totalTime=proposals.reduce((a,p)=>a+p.time,0);
+  const payload={date:ds,sessionId,practiceMin:getPracticeMin(),totalTime,items:proposals.map(p=>({catId:p.catId,catName:CATEGORIES.find(c=>c.id===p.catId)?.name||p.catId,level:p.level,drill:p.drill,time:p.time}))};
+
+  const btn=document.getElementById("confirmBtn");
+  const msg=document.getElementById("sendingMsg");
+  btn.disabled=true; msg.style.display="block";
+
+  let ok=false;
+  try{
+    const encoded=encodeURIComponent(JSON.stringify(payload));
+    const url=GAS_URL+"?data="+encoded;
+    const res=await fetch(url,{method:"GET"});
+    const json=await res.json();
+    ok=json.status==="ok";
+  }catch(e){ ok=false; }
+
+  btn.disabled=false; msg.style.display="none";
+
+  const session={...payload,syncedToSheet:ok};
+  history.unshift(session);
+  saveHistory();
+
+  if(ok){
+    document.getElementById("proposalSection").style.display="none";
+    proposals=[];
+    showToast("スプレッドシートに送信しました。","ok");
+  } else {
+    showToast("送信に失敗しました。ローカルには保存済みです。","err");
+  }
+  renderHistory();
+}
+
+function renderStats(){ renderMetrics(); renderStatsBars(); renderAlerts(); renderDrillFreq(); renderHistory(); }
+
+function renderMetrics(){
+  const sessions=history.length;
+  const totalH=Math.round(history.reduce((a,s)=>a+(s.totalTime||0),0)/60*10)/10;
+  const now=new Date(); const cutoff=new Date(now-30*24*60*60*1000);
+  const recent=history.filter(s=>{ try{ return new Date(s.date.replace(/\//g,"-"))>=cutoff; }catch(e){ return false; } }).length;
+  document.getElementById("metricsGrid").innerHTML=`
+    <div class="metric"><div class="metric-label">総セッション</div><div class="metric-val">${sessions}<span class="metric-unit">回</span></div></div>
+    <div class="metric"><div class="metric-label">総練習時間</div><div class="metric-val">${totalH}<span class="metric-unit">h</span></div></div>
+    <div class="metric"><div class="metric-label">直近30日</div><div class="metric-val">${recent}<span class="metric-unit">回</span></div></div>`;
+}
+
+function calcCatActual(){
+  const totals={}; CATEGORIES.forEach(c=>{ totals[c.id]=0; }); let grand=0;
+  history.forEach(s=>s.items.forEach(i=>{ if(totals[i.catId]!==undefined){ totals[i.catId]+=i.time; grand+=i.time; } }));
+  const pcts={}; CATEGORIES.forEach(c=>{ pcts[c.id]=grand>0?Math.round(totals[c.id]/grand*100):0; });
+  return pcts;
+}
+
+function renderStatsBars(){
+  const chart=document.getElementById("statsBarChart"); chart.innerHTML="";
+  if(!history.length){ chart.innerHTML='<div class="no-data">データがありません</div>'; return; }
+  const actuals=calcCatActual();
+  CATEGORIES.forEach(cat=>{
+    const actual=actuals[cat.id]; const target=weights[cat.id]; const color=CAT_COLORS[cat.id]||"#888";
+    const row=document.createElement("div"); row.className="bar-row";
+    const label=document.createElement("span"); label.className="bar-label"; label.textContent=cat.name;
+    const wrap=document.createElement("div"); wrap.className="bar-wrap";
+    const fill=document.createElement("div"); fill.className="bar-fill"; fill.style.cssText=`width:${actual}%;background:${color};`;
+    const marker=document.createElement("div"); marker.style.cssText=`position:absolute;top:0;left:${target}%;width:2px;height:100%;background:#aaa;`;
+    wrap.appendChild(fill); wrap.appendChild(marker);
+    const pct=document.createElement("span"); pct.className="bar-pct"; pct.textContent=actual+"%";
+    const tgt=document.createElement("span"); tgt.className="bar-tgt"; tgt.textContent="目標"+target+"%";
+    row.appendChild(label); row.appendChild(wrap); row.appendChild(pct); row.appendChild(tgt);
+    chart.appendChild(row);
+  });
+}
+
+function renderAlerts(){
+  const list=document.getElementById("alertList"); list.innerHTML="";
+  if(!history.length){ list.innerHTML='<div class="no-data">データがありません</div>'; return; }
+  const actuals=calcCatActual(); let hasWarn=false;
+  CATEGORIES.forEach(cat=>{
+    const diff=actuals[cat.id]-weights[cat.id];
+    if(Math.abs(diff)>=5){
+      hasWarn=true;
+      const row=document.createElement("div"); row.className="alert-row "+(diff<0?"alert-warn":"alert-ok");
+      const dot=document.createElement("div"); dot.className="alert-dot "+(diff<0?"dot-warn":"dot-ok");
+      const text=document.createElement("span"); text.className="alert-text";
+      text.textContent=diff<0?`${cat.name}が目標より${Math.abs(diff)}%少ない（実績${actuals[cat.id]}% / 目標${weights[cat.id]}%）`:`${cat.name}が目標より${diff}%多い（実績${actuals[cat.id]}% / 目標${weights[cat.id]}%）`;
+      row.appendChild(dot); row.appendChild(text); list.appendChild(row);
+    }
+  });
+  if(!hasWarn){
+    const row=document.createElement("div"); row.className="alert-row alert-ok";
+    const dot=document.createElement("div"); dot.className="alert-dot dot-ok";
+    const text=document.createElement("span"); text.className="alert-text"; text.textContent="すべてのカテゴリが設定ウェイト通りです";
+    row.appendChild(dot); row.appendChild(text); list.appendChild(row);
+  }
+}
+
+function renderDrillFreq(){
+  const list=document.getElementById("drillFreqList"); list.innerHTML="";
+  if(!history.length){ list.innerHTML='<div class="no-data">データがありません</div>'; return; }
+  const counts={};
+  history.forEach(s=>s.items.forEach(i=>{ const key=i.catId+"|"+i.drill; if(!counts[key]) counts[key]={name:i.drill,cat:i.catName,count:0}; counts[key].count++; }));
+  Object.values(counts).sort((a,b)=>b.count-a.count).slice(0,10).forEach(d=>{
+    const row=document.createElement("div"); row.className="drill-row";
+    const nw=document.createElement("div");
+    const name=document.createElement("div"); name.className="drill-name"; name.textContent=d.name;
+    const sub=document.createElement("div"); sub.className="drill-sub"; sub.textContent=d.cat;
+    nw.appendChild(name); nw.appendChild(sub);
+    const cnt=document.createElement("span"); cnt.className="drill-count"; cnt.textContent=d.count+"回";
+    row.appendChild(nw); row.appendChild(cnt); list.appendChild(row);
+  });
+}
+
+function renderHistory(){
+  const el=document.getElementById("historyList");
+  const cnt=document.getElementById("histCount");
+  if(cnt) cnt.textContent=history.length?history.length+"件":"";
+  if(!history.length){ el.innerHTML='<div class="no-data">まだ記録がありません</div>'; return; }
+  el.innerHTML="";
+  history.slice(0,15).forEach(s=>{
+    const summary=[...new Set(s.items.map(i=>i.catName))].join("・");
+    const badge=s.syncedToSheet?'<span class="sync-badge sync-ok">送信済</span>':'<span class="sync-badge sync-pending">未送信</span>';
+    const div=document.createElement("div"); div.className="hist-item";
+    div.innerHTML=`<span class="h-date">${s.date}</span><span class="h-content">${summary}<br>${badge}</span><span class="h-min">${s.totalTime||0}分</span>`;
+    el.appendChild(div);
+  });
+}
+
+document.getElementById("startTime").addEventListener("change",updatePracticeMin);
+document.getElementById("endTime").addEventListener("change",updatePracticeMin);
+loadHistory(); renderWeightTable(); updatePracticeMin();
+</script>
+</body>
+</html>
